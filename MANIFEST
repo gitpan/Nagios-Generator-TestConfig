@@ -1,0 +1,7 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Nagios-Generator-TestConfig.t
+lib/Nagios/Generator/TestConfig.pm
+META.yml                                 Module meta-data (added by MakeMaker)
