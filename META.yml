@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Nagios-Generator-TestConfig
-version:            0.14
+version:            0.15_01
 abstract:           Perl extension for generating test nagios configurations
 author:
     - Sven Nierlein <nierlein@cpan.org>
