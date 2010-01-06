@@ -6,7 +6,7 @@ create_nagios_test_config.pl - create a test nagios config
 
 =head1 SYNOPSIS
 
-./create_nagios_test_config.pl [ -h ] [ -v ] <directory>
+./create_nagios_test_config.pl [ -h ] [ -v ] [ -b <nagios binary> ] [ -p <prefix> ] <directory>
 
 =head1 DESCRIPTION
 
@@ -30,6 +30,18 @@ print help and exit
 
 verbose output
 
+=item prefix
+
+    -p
+
+add this prefix to all exported hosts and services
+
+=item binary
+
+    nagios binary to use
+
+will search for nagios and nagios3 in path if not set
+
 =item directory
 
     output directory for export
@@ -38,7 +50,7 @@ verbose output
 
 =head1 EXAMPLE
 
-./create_nagios_test_config.pl /tmp/test-nagios-config/
+./create_nagios_test_config.pl -p test1 /tmp/test-nagios-config/
 
 =head1 AUTHOR
 
@@ -56,11 +68,13 @@ use Nagios::Generator::TestConfig;
 
 #########################################################################
 # parse and check cmd line arguments
-my ($opt_h, $opt_v, $opt_d);
+my ($opt_h, $opt_v, $opt_p, $opt_b, $opt_d);
 Getopt::Long::Configure('no_ignore_case');
 if(!GetOptions (
    "h"              => \$opt_h,
    "v"              => \$opt_v,
+   "p=s"            => \$opt_p,
+   "b=s"            => \$opt_b,
    "<>"             => \&add_dir,
 )) {
     pod2usage( { -verbose => 1, -message => 'error in options' } );
@@ -81,22 +95,21 @@ if(!defined $opt_d) {
     exit 3;
 }
 
+$opt_p = "" unless defined $opt_p;
+
 
 #########################################################################
-my $nagios_user  = getlogin();
-my @userinfo     = getpwnam($nagios_user);
-my @groupinfo    = getgrgid($userinfo[3]);
-my $nagios_group = $groupinfo[0];
 my $ngt = Nagios::Generator::TestConfig->new(
                     'output_dir'                => $opt_d,
                     'verbose'                   => 1,
                     'overwrite_dir'             => 1,
-                    'hostcount'                 => 400,
-                    'services_per_host'         => 25,
+                    'prefix'                    => $opt_p,
+                    'nagios_bin'                => $opt_b,
+                    'routercount'               => 20,
+                    'hostcount'                 => 200,
+                    'services_per_host'         => 20,
                     'nagios_cfg'                => {
                             'broker_module' => '/opt/projects/git/check_mk/livestatus/src/livestatus.o /tmp/live.sock',
-                            'nagios_user'   => $nagios_user,
-                            'nagios_group'  => $nagios_group,
                         },
                     'hostfailrate'              => 2, # percentage
                     'servicefailrate'           => 5, # percentage
@@ -107,6 +120,13 @@ my $ngt = Nagios::Generator::TestConfig->new(
                     'service_settings'          => {
                             'normal_check_interval' => 30,
                             'retry_check_interval'  => 5,
+                        },
+                    'router_types'              => {
+                                    'down'         => 10, # percentage
+                                    'up'           => 10,
+                                    'flap'         => 10,
+                                    'pending'      => 10,
+                                    'random'       => 60,
                         },
                     'host_types'                => {
                                     'down'         => 5, # percentage
